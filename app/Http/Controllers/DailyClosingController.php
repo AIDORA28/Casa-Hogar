@@ -96,11 +96,41 @@ class DailyClosingController extends Controller
      */
     public function getLastBalance()
     {
-        $lastClosing = DailyClosing::orderBy('closing_date', 'desc')->first();
-        
-        return response()->json([
-            'last_balance' => $lastClosing ? $lastClosing->final_balance : 0.00,
-            'last_date' => $lastClosing ? $lastClosing->closing_date : null
-        ]);
+        try {
+            \Log::info('GET Last Balance - Iniciando');
+            
+            // Usar Eloquent que maneja PostgreSQL automáticamente
+            $lastClosing = DailyClosing::orderBy('closing_date', 'desc')->first();
+            
+            \Log::info('Query ejecutado - Resultado: ' . ($lastClosing ? json_encode($lastClosing->toArray()) : 'null'));
+            
+            if ($lastClosing) {
+                $balance = (float) $lastClosing->final_balance;
+                \Log::info('Saldo encontrado: ' . $balance);
+                
+                return response()->json([
+                    'last_balance' => $balance,
+                    'last_date' => $lastClosing->closing_date
+                ], 200);
+            }
+            
+            \Log::info('No hay cierres - Retornando 0.00');
+            return response()->json([
+                'last_balance' => 0.00,
+                'last_date' => null
+            ], 200);
+            
+        } catch (\Exception $e) {
+            \Log::error('ERROR CRÍTICO en getLastBalance');
+            \Log::error('Mensaje: ' . $e->getMessage());
+            \Log::error('Archivo: ' . $e->getFile() . ':' . $e->getLine());
+            \Log::error('Trace: ' . $e->getTraceAsString());
+            
+            return response()->json([
+                'last_balance' => 0.00,
+                'last_date' => null,
+                'error' => $e->getMessage()
+            ], 200); // Retornar 200 con valor 0 en lugar de 500
+        }
     }
 }

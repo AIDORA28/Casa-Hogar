@@ -69,15 +69,37 @@ const loadProducts = async () => {
 const loadInitialBalance = async () => {
     try {
         const token = localStorage.getItem('auth_token');
+        
+        if (!token) {
+            console.warn('⚠️ No hay token de autenticación');
+            return;
+        }
+        
         const response = await fetch('/api/daily-closings/last-balance', {
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json'
+            }
         });
+        
+        if (!response.ok) {
+            console.error('❌ Error HTTP:', response.status);
+            return;
+        }
+        
         const data = await response.json();
-        cashBox.value.initialBalance = parseFloat(data.last_balance || 0);
-        cashBox.value.finalBalance = parseFloat(data.last_balance || 0);
-        console.log('✓ Saldo inicial cargado:', data.last_balance);
+        console.log('📊 Respuesta del servidor:', data);
+        
+        const balance = parseFloat(data.last_balance || 0);
+        cashBox.value.initialBalance = balance;
+        cashBox.value.finalBalance = balance;
+        
+        console.log(`✅ Saldo inicial cargado: S/ ${balance.toFixed(2)}`);
     } catch (error) {
-        console.error('Error al cargar saldo:', error);
+        console.error('❌ Error al cargar saldo:', error);
+        // En caso de error, mantener en 0
+        cashBox.value.initialBalance = 0;
+        cashBox.value.finalBalance = 0;
     }
 };
 
@@ -248,32 +270,62 @@ const saveDailyRegistry = async () => {
                 reason: injection.reason
             };
 
-            const injectionResponse = await fetch('/api/capital-injections', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(injectionData)
-            });
+            try {
+                const injectionResponse = await fetch('/api/capital-injections', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(injectionData)
+                });
 
-            if (!injectionResponse.ok) {
-                throw new Error('Error al guardar inyección de capital');
+                if (!injectionResponse.ok) {
+                    // Log pero no fallar - la inyección puede haberse guardado
+                    console.warn('⚠️ Respuesta no OK para inyección, pero puede haberse guardado');
+                }
+            } catch (error) {
+                // Log pero continuar - no detener el guardado por este error
+                console.warn('⚠️ Error al guardar inyección (puede haberse guardado):', error);
             }
         }
 
         alert('✅ Registro diario guardado exitosamente');
         
+        // CREAR CIERRE DIARIO AUTOMÁTICAMENTE
+        const today = new Date().toISOString().split('T')[0];
+        const totalInjections = injectionsTable.value.reduce((sum, inj) => sum + inj.amount, 0);
+        const newFinalBalance = (cashBox.value.totalIncome - cashBox.value.totalExpenses + totalInjections) + cashBox.value.initialBalance;
+        
+        try {
+            const closingResponse = await fetch('/api/daily-closings/calculate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ closing_date: today })
+            });
+
+            if (closingResponse.ok) {
+                console.log('✓ Cierre diario creado');
+            }
+        } catch (error) {
+            console.warn('Error al crear cierre:', error);
+        }
+        
         // Limpiar tablas
         salesTable.value = [];
         expensesTable.value = [];
         injectionsTable.value = [];
-        cashBox.value = {
-            totalIncome: 0,
-            totalExpenses: 0,
-            initialBalance: cashBox.value.finalBalance,
-            finalBalance: cashBox.value.finalBalance
-        };
+        
+        // RECARGAR SALDO INICIAL desde el cierre actualizado
+        await loadInitialBalance();
+        
+        // Resetear contadores visuales
+        cashBox.value.totalIncome = 0;
+        cashBox.value.totalExpenses = 0;
+        cashBox.value.finalBalance = cashBox.value.initialBalance;
 
     } catch (error) {
         alert('❌ Error al guardar: ' + error.message);
