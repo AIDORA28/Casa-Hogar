@@ -8,12 +8,14 @@ const downloading = ref(false);
 const showDetail = ref(false);
 const detailData = ref(null);
 const loadingDetail = ref(false);
+const includeInjections = ref(true); // Checkbox para incluir inyecciones
 
 const downloadPDF = async () => {
     downloading.value = true;
     try {
         const token = localStorage.getItem('auth_token');
-        const response = await fetch(`/api/reports/daily-closing-pdf/${selectedDate.value}`, {
+        const url = `/api/reports/daily-closing-pdf/${selectedDate.value}?include_injections=${includeInjections.value ? '1' : '0'}`;
+        const response = await fetch(url, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
@@ -94,6 +96,20 @@ const closeDetail = () => {
                                 type="date"
                                 class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                             />
+                        </div>
+                        
+                        <!-- NUEVO: Checkbox para incluir inyecciones -->
+                        <div class="md:col-span-1">
+                            <label class="flex items-center space-x-2 cursor-pointer">
+                                <input
+                                    v-model="includeInjections"
+                                    type="checkbox"
+                                    class="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                                />
+                                <span class="text-sm font-medium text-gray-700">
+                                    💰 Incluir Inyecciones de Capital en PDF
+                                </span>
+                            </label>
                         </div>
                         
                         <div>

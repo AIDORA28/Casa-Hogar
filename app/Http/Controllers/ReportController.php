@@ -108,8 +108,11 @@ class ReportController extends Controller
     /**
      * Generar PDF del cierre de caja diario (on-demand)
      */
-    public function generateDailyClosingPDF(string $date)
+    public function generateDailyClosingPDF(Request $request, string $date)
     {
+        // Leer parámetro opcional para incluir inyecciones
+        $includeInjections = $request->query('include_injections', '1') === '1';
+        
         // Buscar cierre existente
         $closing = DailyClosing::with('user')->where('closing_date', $date)->first();
         
@@ -162,6 +165,7 @@ class ReportController extends Controller
             'expenses' => $expenses,
             'injections' => $injections,
             'date' => $date,
+            'includeInjections' => $includeInjections, // Nuevo parámetro
         ];
 
         $pdf = Pdf::loadView('reports.daily_closing_pdf', $data);
@@ -188,7 +192,7 @@ class ReportController extends Controller
     {
         // Ventas con detalles de productos
         $sales = Sale::whereDate('sale_date', $date)
-            ->with(['items.product', 'user'])
+            ->with(['saleItems.product', 'user'])
             ->orderBy('created_at', 'asc')
             ->get();
 
@@ -211,7 +215,7 @@ class ReportController extends Controller
                     'id' => $sale->id,
                     'user' => $sale->user->name,
                     'total' => number_format($sale->total_amount, 2),
-                    'items' => $sale->items->map(function ($item) {
+                    'items' => $sale->saleItems->map(function ($item) {
                         return [
                             'product' => $item->product->name,
                             'quantity' => $item->quantity,

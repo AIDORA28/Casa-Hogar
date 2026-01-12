@@ -24,12 +24,18 @@ class PermissionSeeder extends Seeder
             'description' => 'Generar y descargar reportes en PDF'
         ]);
 
+        $injectCapital = Permission::create([
+            'name' => 'inject_capital',
+            'description' => 'Inyectar capital extraordinario en el registro diario'
+        ]);
+
         // Asignar todos los permisos al administrador
         $admin = User::where('email', 'admin@casahogar.com')->first();
         if ($admin) {
             $admin->permissions()->attach([
                 $manageInventory->id,
-                $downloadReports->id
+                $downloadReports->id,
+                $injectCapital->id
             ]);
         }
 

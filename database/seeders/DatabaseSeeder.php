@@ -31,8 +31,9 @@ class DatabaseSeeder extends Seeder
             'role' => 'tesorero',
         ]);
 
-        // Llamar al seeder de productos
+        // Llamar a los seeders
         $this->call([
+            PermissionSeeder::class,
             ProductSeeder::class,
         ]);
     }

@@ -51,7 +51,7 @@ const userRole = computed(() => page.props.auth?.user?.role || '');
                                 </NavLink>
                                 
                                 <NavLink
-                                    v-if="userRole === 'admin'"
+                                    v-if="$page.props.auth.permissions && $page.props.auth.permissions.includes('manage_inventory')"
                                     :href="route('inventory')"
                                     :active="route().current('inventory')"
                                     class="inline-flex items-center"
@@ -60,7 +60,7 @@ const userRole = computed(() => page.props.auth?.user?.role || '');
                                 </NavLink>
                                 
                                 <NavLink
-                                    v-if="userRole === 'admin'"
+                                    v-if="$page.props.auth.permissions && $page.props.auth.permissions.includes('download_reports')"
                                     :href="route('reports')"
                                     :active="route().current('reports')"
                                     class="inline-flex items-center"
@@ -105,6 +105,12 @@ const userRole = computed(() => page.props.auth?.user?.role || '');
                                     <template #content>
                                         <DropdownLink :href="route('profile.edit')">
                                             Perfil
+                                        </DropdownLink>
+                                        <DropdownLink 
+                                            v-if="$page.props.auth.user.role === 'admin'"
+                                            :href="route('users')"
+                                        >
+                                            👥 Usuarios
                                         </DropdownLink>
                                         <DropdownLink
                                             :href="route('logout')"

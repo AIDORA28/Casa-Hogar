@@ -34,10 +34,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/products', [ProductController::class, 'index']);
     Route::get('/products/{id}', [ProductController::class, 'show']);
     
-    // Crear, actualizar y eliminar productos (Solo Admin)
-    Route::post('/products', [ProductController::class, 'store'])->middleware('role:admin');
-    Route::put('/products/{id}', [ProductController::class, 'update'])->middleware('role:admin');
-    Route::delete('/products/{id}', [ProductController::class, 'destroy'])->middleware('role:admin');
+    // Modificar productos (requiere permiso manage_inventory)
+    Route::post('/products', [ProductController::class, 'store'])->middleware('permission:manage_inventory');
+    Route::put('/products/{id}', [ProductController::class, 'update'])->middleware('permission:manage_inventory');
+    Route::delete('/products/{id}', [ProductController::class, 'destroy'])->middleware('permission:manage_inventory');
 
     // ============================================
     // VENTAS
@@ -238,18 +238,30 @@ Route::middleware('auth:sanctum')->group(function () {
     // REPORTES (Solo Admin)
     // ============================================
     
-    // Dashboard stats
-    Route::get('/reports/dashboard', [ReportController::class, 'getDashboardStats'])->middleware('role:admin');
+    // Dashboard stats (todos los usuarios autenticados)
+    Route::get('/reports/dashboard', [ReportController::class, 'getDashboardStats']);
     
-    // Reportes por rango de fechas
-    Route::get('/reports/sales-by-date', [ReportController::class, 'getSalesByDateRange'])->middleware('role:admin');
+    // Reportes por rango de fechas (requiere permiso download_reports)
+    Route::get('/reports/sales-by-date', [ReportController::class, 'getSalesByDateRange'])->middleware('permission:download_reports');
     
-    // PDF cierre diario (on-demand)
-    Route::get('/reports/daily-closing-pdf/{date}', [ReportController::class, 'generateDailyClosingPDF'])->middleware('role:admin');
+    // PDF cierre diario (requiere permiso download_reports)
+    Route::get('/reports/daily-closing-pdf/{date}', [ReportController::class, 'generateDailyClosingPDF'])->middleware('permission:download_reports');
     
-    // Activity logs
-    Route::get('/reports/activity-logs', [ReportController::class, 'getActivityLogs'])->middleware('role:admin');
+    // Activity logs (requiere permiso download_reports)
+    Route::get('/reports/activity-logs', [ReportController::class, 'getActivityLogs'])->middleware('permission:download_reports');
     
-    // Desglose detallado del día
-    Route::get('/reports/daily-detail/{date}', [ReportController::class, 'getDailyDetail'])->middleware('role:admin');
+    // Desglose detallado del día (requiere permiso download_reports)
+    Route::get('/reports/daily-detail/{date}', [ReportController::class, 'getDailyDetail'])->middleware('permission:download_reports');
+
+    // ============================================
+    // GESTIÓN DE USUARIOS (Solo Admin)
+    // ============================================
+    
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/users', [App\Http\Controllers\UserController::class, 'index']);
+        Route::post('/users', [App\Http\Controllers\UserController::class, 'store']);
+        Route::put('/users/{id}', [App\Http\Controllers\UserController::class, 'update']);
+        Route::delete('/users/{id}', [App\Http\Controllers\UserController::class, 'destroy']);
+        Route::get('/permissions', [App\Http\Controllers\UserController::class, 'getPermissions']);
+    });
 });

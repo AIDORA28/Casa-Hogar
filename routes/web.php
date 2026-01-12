@@ -24,15 +24,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('POS');
     })->name('pos');
 
-    // Gestión de Inventario (Solo Admin)
+    // Gestión de Inventario (requiere permiso manage_inventory)
     Route::get('/inventory', function () {
+        if (!auth()->user()->permissions->contains('name', 'manage_inventory')) {
+            abort(403, 'No tiene permisos para acceder a este recurso.');
+        }
         return Inertia::render('InventoryManager');
-    })->middleware('role:admin')->name('inventory');
+    })->name('inventory');
 
-    // Reportes (Solo Admin)
+    // Reportes (requiere permiso download_reports)
     Route::get('/reports', function () {
+        if (!auth()->user()->permissions->contains('name', 'download_reports')) {
+            abort(403, 'No tiene permisos para acceder a este recurso.');
+        }
         return Inertia::render('Reports');
-    })->middleware('role:admin')->name('reports');
+    })->name('reports');
+
+    // Gestión de Usuarios (Solo Admin)
+    Route::get('/users', function () {
+        return Inertia::render('UserManagement');
+    })->middleware('role:admin')->name('users');
 });
 
 Route::middleware('auth')->group(function () {

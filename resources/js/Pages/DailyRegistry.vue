@@ -512,8 +512,8 @@ onMounted(() => {
                     </div>
                 </div>
 
-                <!-- Sección de Inyección de Capital (Solo Admin) -->
-                <div v-if="page.props.auth.user.role === 'admin'" class="bg-white rounded-lg shadow-sm p-6 border-2 border-yellow-300">
+                <!-- Sección de Inyección de Capital (Requiere Permiso) -->
+                <div v-if="$page.props.auth.permissions && $page.props.auth.permissions.includes('inject_capital')" class="bg-white rounded-lg shadow-sm p-6 border-2 border-yellow-300">
                     <h3 class="text-lg font-bold text-yellow-700 mb-4 flex items-center">
                         <span class="text-2xl mr-2">💵</span> Inyección de Capital (Ingresos Extraordinarios)
                     </h3>

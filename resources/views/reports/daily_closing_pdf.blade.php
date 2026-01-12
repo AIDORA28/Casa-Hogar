@@ -106,6 +106,43 @@
         </tfoot>
     </table>
 
+    @if($includeInjections && $injections->count() > 0)
+    <!-- SECCIÓN DE INYECCIONES DE CAPITAL -->
+    <div class="section-title" style="background: #27ae60;">💰 INYECCIONES DE CAPITAL</div>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Hora</th>
+                <th>Registrado por</th>
+                <th>Motivo</th>
+                <th>Monto</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($injections as $injection)
+            <tr>
+                <td>{{ $injection->id }}</td>
+                <td>{{ $injection->created_at->format('H:i') }}</td>
+                <td>{{ $injection->user->name }}</td>
+                <td>{{ $injection->reason }}</td>
+                <td>S/ {{ number_format($injection->amount, 2) }}</td>
+            </tr>
+            @endforeach
+        </tbody>
+        <tfoot>
+            <tr class="total" style="background: #27ae60;">
+                <td colspan="4" style="text-align: right;">TOTAL INYECCIONES:</td>
+                <td>S/ {{ number_format($injections->sum('amount'), 2) }}</td>
+            </tr>
+        </tfoot>
+    </table>
+    @elseif($includeInjections)
+    <!-- Mensaje cuando se solicitó incluir pero no hay inyecciones -->
+    <div class="section-title" style="background: #95a5a6;">💰 INYECCIONES DE CAPITAL</div>
+    <p style="text-align: center; color: #7f8c8d; padding: 15px;">No hay inyecciones de capital registradas en esta fecha.</p>
+    @endif
+
     <div class="footer">
         <p>Documento generado el {{ now()->format('d/m/Y H:i:s') }}</p>
         <p>Sistema Casa Hogar - Control de Ventas y Gastos</p>
