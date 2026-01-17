@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 class CapitalInjection extends Model
 {
     protected $fillable = [
+        'user_id',
+        'user_name',
         'injection_date',
         'amount',
         'reason',
-        'user_id'
     ];
 
     protected $casts = [

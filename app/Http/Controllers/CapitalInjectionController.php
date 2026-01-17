@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\CapitalInjection;
 use App\Models\ActivityLog;
+use App\Helpers\UserHelper;
 use Illuminate\Http\Request;
 
 class CapitalInjectionController extends Controller
@@ -26,7 +27,8 @@ class CapitalInjectionController extends Controller
 
         $injection = CapitalInjection::create([
             ...$validated,
-            'user_id' => auth()->id()
+            'user_id' => auth()->id(),
+            'user_name' => UserHelper::getFormattedName(auth()->user()),
         ]);
 
         // Registrar en activity log

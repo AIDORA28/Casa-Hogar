@@ -16,7 +16,7 @@ const formData = ref({
     permissions: []
 });
 
-// Cargar usuarios
+// Cargar usuarios (incluidos los soft deleted)
 const loadUsers = async () => {
     loading.value = true;
     try {
@@ -137,19 +137,25 @@ const saveUser = async () => {
     }
 };
 
-// Eliminar usuario
-const deleteUser = async (user) => {
-    if (!confirm(`¿Eliminar usuario ${user.name}?`)) return;
+// Activar/Desactivar usuario (soft delete)
+const toggleUserStatus = async (user) => {
+    const action = user.deleted_at ? 'activar' : 'desactivar';
+    if (!confirm(`¿Está seguro de ${action} al usuario ${user.name}?`)) return;
 
     try {
         const token = localStorage.getItem('auth_token');
-        const response = await fetch(`/api/users/${user.id}`, {
-            method: 'DELETE',
+        const endpoint = user.deleted_at 
+            ? `/api/users/${user.id}/restore`
+            : `/api/users/${user.id}`;
+        const method = user.deleted_at ? 'PUT' : 'DELETE';
+
+        const response = await fetch(endpoint, {
+            method: method,
             headers: { 'Authorization': `Bearer ${token}` }
         });
 
         if (response.ok) {
-            alert('✅ Usuario eliminado');
+            alert(`✅ Usuario ${user.deleted_at ? 'activado' : 'desactivado'}`);
             loadUsers();
         } else {
             const error = await response.json();
@@ -215,6 +221,7 @@ onMounted(() => {
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">estado</th>
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Permisos</th>
                                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
                                     </tr>
@@ -233,6 +240,14 @@ onMounted(() => {
                                                 class="px-2 py-1 text-xs rounded-full font-semibold"
                                             >
                                                 {{ user.role === 'admin' ? 'Administrador' : 'Tesorero' }}
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <span 
+                                                :class="user.deleted_at ? 'bg-gray-100 text-gray-800' : 'bg-green-100 text-green-800'"
+                                                class="px-2 py-1 text-xs rounded-full font-semibold"
+                                            >
+                                                {{ user.deleted_at ? 'Desactivado' : 'Activo' }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4">
@@ -254,14 +269,15 @@ onMounted(() => {
                                                 <button
                                                     @click="openEditModal(user)"
                                                     class="text-blue-600 hover:text-blue-900 mr-3"
+                                                    v-if="!user.deleted_at"
                                                 >
                                                     ✏️ Editar
                                                 </button>
                                                 <button
-                                                    @click="deleteUser(user)"
-                                                    class="text-red-600 hover:text-red-900"
+                                                    @click="toggleUserStatus(user)"
+                                                    :class="user.deleted_at ? 'text-green-600 hover:text-green-900' : 'text-orange-600 hover:text-orange-900'"
                                                 >
-                                                    🗑️ Eliminar
+                                                    {{ user.deleted_at ? '✅ Activar' : '🚫 Desactivar' }}
                                                 </button>
                                             </template>
                                             <span v-else class="text-gray-400 text-xs">

@@ -24,7 +24,7 @@
         <h1>CASA HOGAR</h1>
         <p>Cierre de Caja Diario</p>
         <p>Fecha: {{ \Carbon\Carbon::parse($date)->format('d/m/Y') }}</p>
-        <p>Generado por: {{ $closing->user->name }}</p>
+        <p>Generado por: {{ $closing->user_name ?? ($closing->user ? $closing->user->name : 'Usuario eliminado') }}</p>
     </div>
 
     <div class="summary">
@@ -34,6 +34,7 @@
         <div class="summary-item"><strong>Saldo Final:</strong> S/ {{ number_format($closing->final_balance, 2) }}</div>
     </div>
 
+    @if($includeSales)
     <div class="section-title">DETALLE DE VENTAS</div>
     <table>
         <thead>
@@ -41,6 +42,7 @@
                 <th>#</th>
                 <th>Hora</th>
                 <th>Tesorero</th>
+                <th>Enfermera</th>
                 <th>Productos</th>
                 <th>Total</th>
             </tr>
@@ -50,7 +52,8 @@
             <tr>
                 <td>{{ $sale->id }}</td>
                 <td>{{ $sale->created_at->format('H:i') }}</td>
-                <td>{{ $sale->user->name }}</td>
+                <td>{{ $sale->user_name ?? ($sale->user ? $sale->user->name : 'Usuario eliminado') }}</td>
+                <td>{{ $sale->nurse ? $sale->nurse->name : 'N/A' }}</td>
                 <td>
                     @foreach($sale->saleItems as $item)
                         {{ $item->product->name }} (x{{ $item->quantity }})<br>
@@ -60,18 +63,20 @@
             </tr>
             @empty
             <tr>
-                <td colspan="5" style="text-align: center; color: #95a5a6;">No hay ventas registradas</td>
+                <td colspan="6" style="text-align: center; color: #95a5a6;">No hay ventas registradas</td>
             </tr>
             @endforelse
         </tbody>
         <tfoot>
             <tr class="total">
-                <td colspan="4" style="text-align: right;">TOTAL VENTAS:</td>
+                <td colspan="5" style="text-align: right;">TOTAL VENTAS:</td>
                 <td>S/ {{ number_format($sales->sum('total_amount'), 2) }}</td>
             </tr>
         </tfoot>
     </table>
+    @endif
 
+    @if($includeExpenses)
     <div class="section-title">DETALLE DE GASTOS</div>
     <table>
         <thead>
@@ -88,7 +93,7 @@
             <tr>
                 <td>{{ $expense->id }}</td>
                 <td>{{ $expense->created_at->format('H:i') }}</td>
-                <td>{{ $expense->user->name }}</td>
+                <td>{{ $expense->user_name ?? ($expense->user ? $expense->user->name : 'Usuario eliminado') }}</td>
                 <td>{{ $expense->description }}</td>
                 <td>S/ {{ number_format($expense->amount, 2) }}</td>
             </tr>
@@ -105,6 +110,7 @@
             </tr>
         </tfoot>
     </table>
+    @endif
 
     @if($includeInjections && $injections->count() > 0)
     <!-- SECCIÓN DE INYECCIONES DE CAPITAL -->
@@ -124,7 +130,7 @@
             <tr>
                 <td>{{ $injection->id }}</td>
                 <td>{{ $injection->created_at->format('H:i') }}</td>
-                <td>{{ $injection->user->name }}</td>
+                <td>{{ $injection->user_name ?? ($injection->user ? $injection->user->name : 'Usuario eliminado') }}</td>
                 <td>{{ $injection->reason }}</td>
                 <td>S/ {{ number_format($injection->amount, 2) }}</td>
             </tr>
@@ -141,6 +147,36 @@
     <!-- Mensaje cuando se solicitó incluir pero no hay inyecciones -->
     <div class="section-title" style="background: #95a5a6;">💰 INYECCIONES DE CAPITAL</div>
     <p style="text-align: center; color: #7f8c8d; padding: 15px;">No hay inyecciones de capital registradas en esta fecha.</p>
+    @endif
+
+    <!-- SECCIÓN DE MERMAS/BAJAS DE INVENTARIO -->
+    @if($includeWaste && $wasteRecords->count() > 0)
+    <div class="section-title" style="background: #e74c3c;">📉 MERMAS / BAJAS DE INVENTARIO</div>
+    <table>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Hora</th>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Motivo</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($wasteRecords as $waste)
+            <tr>
+                <td>{{ $waste->id }}</td>
+                <td>{{ $waste->created_at->format('H:i') }}</td>
+                <td>{{ $waste->product->name }}</td>
+                <td>{{ $waste->quantity }}</td>
+                <td>{{ $waste->reason }}</td>
+            </tr>
+            @endforeach
+        </tbody>
+    </table>
+    <p style="font-size: 10px; color: #7f8c8d; margin-top: 10px;">
+        <strong>Nota:</strong> Las mermas/bajas NO afectan el balance de caja. Solo registran la disminución de inventario.
+    </p>
     @endif
 
     <div class="footer">

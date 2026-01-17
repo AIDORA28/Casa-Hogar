@@ -8,12 +8,13 @@ class DailyClosing extends Model
 {
     // Atributos que se pueden asignar masivamente
     protected $fillable = [
+        'user_id',
+        'user_name',
         'closing_date',
         'total_sales',
         'total_expenses',
         'previous_balance',
         'final_balance',
-        'user_id',
     ];
 
     // Cast de tipos

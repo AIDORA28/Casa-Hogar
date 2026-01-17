@@ -6,6 +6,7 @@ use App\Http\Resources\DailyClosingResource;
 use App\Models\DailyClosing;
 use App\Models\Expense;
 use App\Models\Sale;
+use App\Helpers\UserHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -55,15 +56,18 @@ class DailyClosingController extends Controller
             // Calcular balance final: (Ventas - Gastos) + Saldo Anterior
             $finalBalance = ($totalSales - $totalExpenses) + $previousBalance;
 
-            // Crear el cierre
-            $closing = DailyClosing::create([
-                'closing_date' => $closingDate,
-                'total_sales' => $totalSales,
-                'total_expenses' => $totalExpenses,
-                'previous_balance' => $previousBalance,
-                'final_balance' => $finalBalance,
-                'user_id' => auth()->id(),
-            ]);
+            // Crear o actualizar el cierre (permite múltiples actualizaciones en el mismo día)
+            $closing = DailyClosing::updateOrCreate(
+                ['closing_date' => $closingDate],
+                [
+                    'total_sales' => $totalSales,
+                    'total_expenses' => $totalExpenses,
+                    'previous_balance' => $previousBalance,
+                    'final_balance' => $finalBalance,
+                    'user_id' => auth()->id(),
+                    'user_name' => UserHelper::getFormattedName(auth()->user()),
+                ]
+            );
 
             DB::commit();
 

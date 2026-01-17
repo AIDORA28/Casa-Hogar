@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\ExpenseResource;
 use App\Models\ActivityLog;
 use App\Models\Expense;
+use App\Helpers\UserHelper;
 use Illuminate\Http\Request;
 
 class ExpenseController extends Controller
@@ -40,6 +41,7 @@ class ExpenseController extends Controller
         $expense = Expense::create([
             ...$validated,
             'user_id' => auth()->id(),
+            'user_name' => UserHelper::getFormattedName(auth()->user()),
         ]);
 
         return response()->json([

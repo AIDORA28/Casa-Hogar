@@ -110,8 +110,11 @@ class ReportController extends Controller
      */
     public function generateDailyClosingPDF(Request $request, string $date)
     {
-        // Leer parámetro opcional para incluir inyecciones
+        // Leer parámetros opcionales para incluir secciones
+        $includeSales = $request->query('include_sales', '1') === '1';
+        $includeExpenses = $request->query('include_expenses', '1') === '1';
         $includeInjections = $request->query('include_injections', '1') === '1';
+        $includeWaste = $request->query('include_waste', '1') === '1';
         
         // Buscar cierre existente
         $closing = DailyClosing::with('user')->where('closing_date', $date)->first();
@@ -144,8 +147,8 @@ class ReportController extends Controller
             ]);
         }
 
-        // Obtener ventas del día
-        $sales = Sale::with(['saleItems.product', 'user'])
+        // Obtener ventas del día con enfermera
+        $sales = Sale::with(['saleItems.product', 'user', 'nurse'])
             ->whereDate('sale_date', $date)
             ->get();
 
@@ -159,13 +162,22 @@ class ReportController extends Controller
             ->whereDate('injection_date', $date)
             ->get();
 
+        // Obtener mermas del día
+        $wasteRecords = \App\Models\WasteRecord::with('product')
+            ->whereDate('waste_date', $date)
+            ->get();
+
         $data = [
             'closing' => $closing,
             'sales' => $sales,
             'expenses' => $expenses,
             'injections' => $injections,
+            'wasteRecords' => $wasteRecords,
             'date' => $date,
-            'includeInjections' => $includeInjections, // Nuevo parámetro
+            'includeSales' => $includeSales,
+            'includeExpenses' => $includeExpenses,
+            'includeInjections' => $includeInjections,
+            'includeWaste' => $includeWaste,
         ];
 
         $pdf = Pdf::loadView('reports.daily_closing_pdf', $data);
@@ -190,9 +202,9 @@ class ReportController extends Controller
      */
     public function getDailyDetail($date)
     {
-        // Ventas con detalles de productos
+        // Ventas con detalles de productos y enfermera responsable
         $sales = Sale::whereDate('sale_date', $date)
-            ->with(['saleItems.product', 'user'])
+            ->with(['saleItems.product', 'user', 'nurse'])
             ->orderBy('created_at', 'asc')
             ->get();
 
@@ -208,12 +220,19 @@ class ReportController extends Controller
             ->orderBy('created_at', 'asc')
             ->get();
 
+        // Mermas/Bajas de inventario
+        $wasteRecords = \App\Models\WasteRecord::whereDate('waste_date', $date)
+            ->with('product')
+            ->orderBy('created_at', 'asc')
+            ->get();
+
         return response()->json([
             'date' => $date,
             'sales' => $sales->map(function ($sale) {
                 return [
                     'id' => $sale->id,
-                    'user' => $sale->user->name,
+                    'user' => $sale->user_name ?? ($sale->user ? $sale->user->name : 'Usuario eliminado'),
+                    'nurse' => $sale->nurse ? $sale->nurse->name : 'No especificado',
                     'total' => number_format($sale->total_amount, 2),
                     'items' => $sale->saleItems->map(function ($item) {
                         return [
@@ -229,7 +248,7 @@ class ReportController extends Controller
             'expenses' => $expenses->map(function ($expense) {
                 return [
                     'id' => $expense->id,
-                    'user' => $expense->user->name,
+                    'user' => $expense->user_name ?? ($expense->user ? $expense->user->name : 'Usuario eliminado'),
                     'amount' => number_format($expense->amount, 2),
                     'description' => $expense->description,
                     'created_at' => $expense->created_at->format('H:i:s')
@@ -238,10 +257,19 @@ class ReportController extends Controller
             'injections' => $injections->map(function ($injection) {
                 return [
                     'id' => $injection->id,
-                    'user' => $injection->user->name,
+                    'user' => $injection->user_name ?? ($injection->user ? $injection->user->name : 'Usuario eliminado'),
                     'amount' => number_format($injection->amount, 2),
                     'reason' => $injection->reason,
                     'created_at' => $injection->created_at->format('H:i:s')
+                ];
+            }),
+            'waste_records' => $wasteRecords->map(function ($waste) {
+                return [
+                    'id' => $waste->id,
+                    'product' => $waste->product->name,
+                    'quantity' => $waste->quantity,
+                    'reason' => $waste->reason,
+                    'created_at' => $waste->created_at->format('H:i:s')
                 ];
             }),
             'summary' => [

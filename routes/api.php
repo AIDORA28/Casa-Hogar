@@ -256,12 +256,35 @@ Route::middleware('auth:sanctum')->group(function () {
     // ============================================
     // GESTIÓN DE USUARIOS (Solo Admin)
     // ============================================
-    
     Route::middleware('role:admin')->group(function () {
         Route::get('/users', [App\Http\Controllers\UserController::class, 'index']);
         Route::post('/users', [App\Http\Controllers\UserController::class, 'store']);
         Route::put('/users/{id}', [App\Http\Controllers\UserController::class, 'update']);
         Route::delete('/users/{id}', [App\Http\Controllers\UserController::class, 'destroy']);
+        Route::put('/users/{id}/restore', [App\Http\Controllers\UserController::class, 'restore']);
         Route::get('/permissions', [App\Http\Controllers\UserController::class, 'getPermissions']);
     });
+
+    // ============================================
+    // GESTIÓN DE ENFERMERAS/PERSONAL (Solo Admin)
+    // ============================================
+    
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/nurses', [App\Http\Controllers\NurseController::class, 'index']);
+        Route::post('/nurses', [App\Http\Controllers\NurseController::class, 'store']);
+        Route::put('/nurses/{id}', [App\Http\Controllers\NurseController::class, 'update']);
+        Route::put('/nurses/{id}/toggle', [App\Http\Controllers\NurseController::class, 'toggleActive']);
+        Route::put('/nurses/{id}/restore', [App\Http\Controllers\NurseController::class, 'restore']);
+    });
+
+    // Obtener enfermeras activas (todos los usuarios autenticados)
+    Route::get('/nurses/active', [App\Http\Controllers\NurseController::class, 'getActive']);
+
+    // ============================================
+    // REGISTRO DE MERMAS (Todos los usuarios)
+    // ============================================
+    
+    Route::get('/waste-records', [App\Http\Controllers\WasteRecordController::class, 'index']);
+    Route::post('/waste-records', [App\Http\Controllers\WasteRecordController::class, 'store']);
+    Route::delete('/waste-records/{id}', [App\Http\Controllers\WasteRecordController::class, 'destroy']);
 });

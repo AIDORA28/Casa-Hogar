@@ -9,6 +9,8 @@ class Sale extends Model
     // Atributos que se pueden asignar masivamente
     protected $fillable = [
         'user_id',
+        'user_name',
+        'nurse_id',
         'sale_date',
         'total_amount',
     ];
@@ -25,6 +27,14 @@ class Sale extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Relación muchos a uno: Una venta fue entregada por una enfermera
+     */
+    public function nurse()
+    {
+        return $this->belongsTo(Nurse::class);
     }
 
     /**

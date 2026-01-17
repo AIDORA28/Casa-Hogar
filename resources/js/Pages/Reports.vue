@@ -8,13 +8,34 @@ const downloading = ref(false);
 const showDetail = ref(false);
 const detailData = ref(null);
 const loadingDetail = ref(false);
-const includeInjections = ref(true); // Checkbox para incluir inyecciones
+
+// Filtros para PDF (todos activos por defecto)
+const pdfFilters = ref({
+    includeSales: true,
+    includeExpenses: true,
+    includeInjections: true,
+    includeWaste: true
+});
 
 const downloadPDF = async () => {
+    // Validar que al menos un filtro esté activo
+    const hasAtLeastOne = Object.values(pdfFilters.value).some(v => v);
+    if (!hasAtLeastOne) {
+        alert('⚠️ Debes seleccionar al menos una sección para el PDF');
+        return;
+    }
+
     downloading.value = true;
     try {
         const token = localStorage.getItem('auth_token');
-        const url = `/api/reports/daily-closing-pdf/${selectedDate.value}?include_injections=${includeInjections.value ? '1' : '0'}`;
+        const params = new URLSearchParams({
+            include_sales: pdfFilters.value.includeSales ? '1' : '0',
+            include_expenses: pdfFilters.value.includeExpenses ? '1' : '0',
+            include_injections: pdfFilters.value.includeInjections ? '1' : '0',
+            include_waste: pdfFilters.value.includeWaste ? '1' : '0'
+        });
+        
+        const url = `/api/reports/daily-closing-pdf/${selectedDate.value}?${params}`;
         const response = await fetch(url, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
@@ -98,18 +119,45 @@ const closeDetail = () => {
                             />
                         </div>
                         
-                        <!-- NUEVO: Checkbox para incluir inyecciones -->
-                        <div class="md:col-span-1">
-                            <label class="flex items-center space-x-2 cursor-pointer">
-                                <input
-                                    v-model="includeInjections"
-                                    type="checkbox"
-                                    class="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                                />
-                                <span class="text-sm font-medium text-gray-700">
-                                    💰 Incluir Inyecciones de Capital en PDF
-                                </span>
+                        <!-- Filtros para PDF -->
+                        <div class="md:col-span-3">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Secciones a Incluir en PDF
                             </label>
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input
+                                        v-model="pdfFilters.includeSales"
+                                        type="checkbox"
+                                        class="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                                    />
+                                    <span class="text-sm">💰 Ventas</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input
+                                        v-model="pdfFilters.includeExpenses"
+                                        type="checkbox"
+                                        class="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                                    />
+                                    <span class="text-sm">📊 Gastos</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input
+                                        v-model="pdfFilters.includeInjections"
+                                        type="checkbox"
+                                        class="w-4 h-4 text-yellow-600 border-gray-300 rounded focus:ring-yellow-500"
+                                    />
+                                    <span class="text-sm">💵 Inyecciones</span>
+                                </label>
+                                <label class="flex items-center space-x-2 cursor-pointer">
+                                    <input
+                                        v-model="pdfFilters.includeWaste"
+                                        type="checkbox"
+                                        class="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
+                                    />
+                                    <span class="text-sm">📉 Mermas</span>
+                                </label>
+                            </div>
                         </div>
                         
                         <div>
@@ -182,6 +230,7 @@ const closeDetail = () => {
                                         <div>
                                             <p class="font-semibold">Venta #{{ sale.id }}</p>
                                             <p class="text-sm text-gray-600">{{ sale.user }} - {{ sale.created_at }}</p>
+                                            <p class="text-xs text-blue-600">👔 Enfermera: {{ sale.nurse }}</p>
                                         </div>
                                         <p class="text-lg font-bold text-green-600">S/ {{ sale.total }}</p>
                                     </div>
@@ -219,6 +268,24 @@ const closeDetail = () => {
                                         <p class="text-sm text-gray-600">{{ injection.user }} - {{ injection.created_at }}</p>
                                     </div>
                                     <p class="text-lg font-bold text-yellow-600">S/ {{ injection.amount }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <!-- Mermas / Bajas de Inventario -->
+                        <div v-if="detailData.waste_records && detailData.waste_records.length > 0">
+                            <h4 class="font-bold text-orange-700 mb-3">📉 Mermas / Bajas de Inventario ({{ detailData.waste_records.length }})</h4>
+                            <div class="space-y-3">
+                                <div v-for="waste in detailData.waste_records" :key="waste.id" class="bg-orange-50 p-4 rounded border-l-4 border-orange-500">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <p class="font-semibold">{{ waste.product }}</p>
+                                            <p class="text-sm text-gray-600">Cantidad: {{ waste.quantity }} unidades</p>
+                                            <p class="text-xs text-gray-500">{{ waste.created_at }}</p>
+                                        </div>
+                                        <p class="text-sm text-orange-600 italic">{{ waste.reason }}</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>

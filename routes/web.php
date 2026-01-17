@@ -19,11 +19,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return Inertia::render('DailyRegistry');
     })->name('daily-registry');
 
-    // POS Original (Opcional)
-    Route::get('/pos', function () {
-        return Inertia::render('POS');
-    })->name('pos');
-
     // Gestión de Inventario (requiere permiso manage_inventory)
     Route::get('/inventory', function () {
         if (!auth()->user()->permissions->contains('name', 'manage_inventory')) {
@@ -44,6 +39,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/users', function () {
         return Inertia::render('UserManagement');
     })->middleware('role:admin')->name('users');
+
+    // Gestión de Personal/Enfermeras (Solo Admin)
+    Route::get('/nurses', function () {
+        return Inertia::render('Nurses');
+    })->middleware('role:admin')->name('nurses');
 });
 
 Route::middleware('auth')->group(function () {

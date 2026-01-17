@@ -9,6 +9,7 @@ class Expense extends Model
     // Atributos que se pueden asignar masivamente
     protected $fillable = [
         'user_id',
+        'user_name',
         'expense_date',
         'amount',
         'description',

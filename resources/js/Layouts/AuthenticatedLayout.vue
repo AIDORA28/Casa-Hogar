@@ -112,6 +112,12 @@ const userRole = computed(() => page.props.auth?.user?.role || '');
                                         >
                                             👥 Usuarios
                                         </DropdownLink>
+                                        <DropdownLink 
+                                            v-if="$page.props.auth.user.role === 'admin'"
+                                            :href="route('nurses')"
+                                        >
+                                            👔 Personal
+                                        </DropdownLink>
                                         <DropdownLink
                                             :href="route('logout')"
                                             method="post"
@@ -176,13 +182,6 @@ const userRole = computed(() => page.props.auth?.user?.role || '');
                             :active="route().current('dashboard')"
                         >
                             🏠 Dashboard
-                        </ResponsiveNavLink>
-                        
-                        <ResponsiveNavLink
-                            :href="route('pos')"
-                            :active="route().current('pos')"
-                        >
-                            🛒 Punto de Venta
                         </ResponsiveNavLink>
                         
                         <ResponsiveNavLink

@@ -7,6 +7,7 @@ use App\Http\Resources\SaleResource;
 use App\Models\Product;
 use App\Models\Sale;
 use App\Models\SaleItem;
+use App\Helpers\UserHelper; // Added this line
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -49,6 +50,8 @@ class SaleController extends Controller
             // Crear el registro de venta
             $sale = Sale::create([
                 'user_id' => auth()->id(), // Usuario autenticado (tesorero)
+                'user_name' => UserHelper::getFormattedName(auth()->user()),
+                'nurse_id' => $validated['nurse_id'] ?? null, // Enfermera responsable
                 'sale_date' => $validated['sale_date'],
                 'total_amount' => $totalAmount,
             ]);

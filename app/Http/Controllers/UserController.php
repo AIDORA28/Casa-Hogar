@@ -11,11 +11,11 @@ use Illuminate\Validation\Rules;
 class UserController extends Controller
 {
     /**
-     * Listar todos los usuarios con sus permisos
+     * Listar todos los usuarios con sus permisos (incluidos soft deleted)
      */
     public function index()
     {
-        $users = User::with('permissions')->orderBy('created_at', 'desc')->get();
+        $users = User::withTrashed()->with('permissions')->orderBy('created_at', 'desc')->get();
         
         return response()->json($users->map(function ($user) {
             return [
@@ -24,6 +24,7 @@ class UserController extends Controller
                 'email' => $user->email,
                 'role' => $user->role,
                 'permissions' => $user->permissions->pluck('name'),
+                'deleted_at' => $user->deleted_at,
                 'created_at' => $user->created_at->format('d/m/Y')
             ];
         }), 200);
@@ -161,7 +162,20 @@ class UserController extends Controller
      */
     public function getPermissions()
     {
-        $permissions = Permission::all(['id', 'name', 'description']);
-        return response()->json($permissions, 200);
+        return response()->json(Permission::all(['name', 'description']), 200);
+    }
+
+    /**
+     * Restaurar usuario eliminado
+     */
+    public function restore($id)
+    {
+        $user = User::withTrashed()->findOrFail($id);
+        $user->restore();
+        
+        return response()->json([
+            'message' => 'Usuario restaurado exitosamente',
+            'user' => $user
+        ], 200);
     }
 }
