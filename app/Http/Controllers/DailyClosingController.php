@@ -30,7 +30,7 @@ class DailyClosingController extends Controller
     public function calculate(Request $request)
     {
         $request->validate([
-            'closing_date' => 'required|date|unique:daily_closings,closing_date',
+            'closing_date' => 'required|date',
         ]);
 
         try {
