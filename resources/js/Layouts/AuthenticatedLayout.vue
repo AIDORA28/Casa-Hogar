@@ -73,21 +73,27 @@ const userRole = computed(() => page.props.auth?.user?.role || '');
                         <div class="hidden sm:ms-6 sm:flex sm:items-center">
                             <!-- Settings Dropdown -->
                             <div class="relative ms-3">
-                                <Dropdown align="right" width="48">
+                                <Dropdown align="right" width="56">
                                     <template #trigger>
                                         <span class="inline-flex rounded-md">
                                             <button
                                                 type="button"
-                                                class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 transition duration-150 ease-in-out hover:text-green-600 focus:outline-none"
+                                                class="inline-flex items-center rounded-xl border border-gray-100 bg-white px-4 py-2 text-sm font-bold text-gray-700 transition-all hover:bg-gray-50 hover:border-green-200 focus:outline-none shadow-sm group"
                                             >
-                                                {{ page.props.auth.user.name }}
-                                                <span class="ml-2 text-xs px-2 py-1 rounded-full" 
-                                                      :class="userRole === 'admin' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'">
-                                                    {{ userRole === 'admin' ? 'Admin' : 'Tesorero' }}
-                                                </span>
+                                                <div class="flex items-center">
+                                                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-green-100 to-indigo-100 flex items-center justify-center mr-2 text-lg shadow-inner group-hover:scale-110 transition-transform">
+                                                        👤
+                                                    </div>
+                                                    <div class="text-left">
+                                                        <p class="text-xs font-black text-gray-900 leading-tight uppercase tracking-tighter">{{ page.props.auth.user.name }}</p>
+                                                        <p class="text-[10px] font-bold" :class="userRole === 'admin' ? 'text-green-600' : 'text-blue-600'">
+                                                            {{ userRole === 'admin' ? 'Administrador' : 'Tesorero' }}
+                                                        </p>
+                                                    </div>
+                                                </div>
 
                                                 <svg
-                                                    class="-me-0.5 ms-2 h-4 w-4"
+                                                    class="-me-0.5 ms-3 h-4 w-4 text-gray-400 group-hover:text-green-500 transition-colors"
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     viewBox="0 0 20 20"
                                                     fill="currentColor"
@@ -103,27 +109,47 @@ const userRole = computed(() => page.props.auth?.user?.role || '');
                                     </template>
 
                                     <template #content>
-                                        <DropdownLink :href="route('profile.edit')">
-                                            Perfil
+                                        <div class="px-4 py-3 border-b border-gray-100 bg-gray-50/50">
+                                            <p class="text-xs font-black text-gray-400 uppercase tracking-widest">Mi Cuenta</p>
+                                        </div>
+                                        
+                                        <DropdownLink :href="route('profile.edit')" class="flex items-center py-3">
+                                            <span class="mr-3 text-lg">⚙️</span>
+                                            <span class="font-bold">Editar Perfil</span>
                                         </DropdownLink>
+                                        
+                                        <div v-if="$page.props.auth.user.role === 'admin'" class="px-4 py-2 mt-2 border-t border-gray-100 border-b bg-gray-50/50">
+                                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Administración</p>
+                                        </div>
+
                                         <DropdownLink 
                                             v-if="$page.props.auth.user.role === 'admin'"
                                             :href="route('users')"
+                                            class="flex items-center py-3 text-indigo-700"
                                         >
-                                            👥 Usuarios
+                                            <span class="mr-3 text-lg">👥</span>
+                                            <span class="font-bold">Usuarios del Sistema</span>
                                         </DropdownLink>
+
                                         <DropdownLink 
                                             v-if="$page.props.auth.user.role === 'admin'"
                                             :href="route('nurses')"
+                                            class="flex items-center py-3 text-purple-700"
                                         >
-                                            👔 Personal
+                                            <span class="mr-3 text-lg">👩‍⚕️</span>
+                                            <span class="font-bold">Gestión de Personal</span>
                                         </DropdownLink>
+
+                                        <div class="border-t border-gray-100 mt-2"></div>
+                                        
                                         <DropdownLink
                                             :href="route('logout')"
                                             method="post"
                                             as="button"
+                                            class="flex items-center py-3 text-red-600 hover:bg-red-50 w-full text-left"
                                         >
-                                            Cerrar Sesión
+                                            <span class="mr-3 text-lg">🚪</span>
+                                            <span class="font-bold">Cerrar Sesión</span>
                                         </DropdownLink>
                                     </template>
                                 </Dropdown>

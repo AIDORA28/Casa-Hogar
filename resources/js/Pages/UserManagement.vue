@@ -187,46 +187,68 @@ onMounted(() => {
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                👥 Gestión de Usuarios
-            </h2>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="font-bold text-2xl text-gray-800 leading-tight flex items-center">
+                        <span class="mr-3">👤</span> Gestión de Usuarios
+                    </h2>
+                    <p class="text-sm text-gray-500 mt-1">Control de acceso y permisos del sistema</p>
+                </div>
+            </div>
         </template>
 
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 
-                <!-- Botón Crear Usuario -->
-                <div class="mb-6">
-                    <button
-                        @click="openCreateModal"
-                        class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold shadow-lg transition"
-                    >
-                        ➕ Crear Usuario
-                    </button>
+                <!-- Header Informativo -->
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 p-4 rounded-lg shadow-sm">
+                    <div class="flex items-start">
+                        <span class="text-2xl mr-3">👥</span>
+                        <div>
+                            <p class="font-medium text-blue-900 mb-1">Control de Accesos</p>
+                            <p class="text-sm text-blue-800">
+                                Gestiona los usuarios del sistema y sus permisos específicos.
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Tabla de Usuarios -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <h3 class="font-bold text-lg mb-4">Usuarios del Sistema</h3>
+                <div class="card-base p-0 overflow-hidden">
+                    <div class="px-6 py-5 bg-gradient-to-r from-gray-50 to-white border-b flex justify-between items-center">
+                        <div>
+                            <h3 class="section-header !mb-0">
+                                <span class="icon">👥</span> Usuarios Registrados
+                            </h3>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">
+                                Total: {{ users.length }} usuarios en el sistema
+                            </p>
+                        </div>
+                        <button 
+                            @click="openCreateModal"
+                            class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-black text-xs uppercase tracking-widest hover:bg-blue-700 transition-all hover:shadow-lg active:scale-95"
+                        >
+                            + Nuevo Usuario
+                        </button>
+                    </div>
+
                         
                         <div v-if="loading" class="text-center py-8 text-gray-500">
                             Cargando usuarios...
                         </div>
 
                         <div v-else class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
+                            <table class="table-modern">
+                                <thead>
                                     <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">estado</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Permisos</th>
-                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                                        <th>Nombre</th>
+                                        <th>Email</th>
+                                        <th>Rol</th>
+                                        <th>Estado</th>
+                                        <th>Permisos</th>
+                                        <th class="text-right">Acciones</th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
+                                <tbody>
                                     <tr v-for="user in users" :key="user.id">
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="text-sm font-medium text-gray-900">{{ user.name }}</div>
@@ -289,7 +311,6 @@ onMounted(() => {
                             </table>
                         </div>
                     </div>
-                </div>
 
                 <!-- Modal Crear/Editar -->
                 <div

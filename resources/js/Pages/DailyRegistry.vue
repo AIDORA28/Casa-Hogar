@@ -8,6 +8,16 @@ const products = ref([]);
 const nurses = ref([]);
 const loading = ref(true);
 
+// Helper para obtener fecha local de Lima (YYYY-MM-DD)
+const getLimaDate = () => {
+    return new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'America/Lima',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+    }).format(new Date());
+};
+
 // Estado de la caja del día
 const cashBox = ref({
     totalIncome: 0,
@@ -346,7 +356,7 @@ const saveDailyRegistry = async () => {
         // Guardar ventas (con enfermera responsable)
         if (salesTable.value.length > 0) {
             const saleData = {
-                sale_date: new Date().toISOString().split('T')[0],
+                sale_date: getLimaDate(),
                 nurse_id: selectedNurse.value,
                 items: salesTable.value.map(row => ({
                     product_id: row.product_id,
@@ -371,7 +381,7 @@ const saveDailyRegistry = async () => {
         // Guardar gastos
         for (const expense of expensesTable.value) {
             const expenseData = {
-                expense_date: new Date().toISOString().split('T')[0],
+                expense_date: getLimaDate(),
                 amount: expense.amount,
                 description: expense.description
             };
@@ -393,7 +403,7 @@ const saveDailyRegistry = async () => {
         // Guardar inyecciones de capital
         for (const injection of injectionsTable.value) {
             const injectionData = {
-                injection_date: new Date().toISOString().split('T')[0],
+                injection_date: getLimaDate(),
                 amount: injection.amount,
                 reason: injection.reason
             };
@@ -424,7 +434,7 @@ const saveDailyRegistry = async () => {
                 product_id: waste.product_id,
                 quantity: waste.quantity,
                 reason: waste.reason,
-                waste_date: new Date().toISOString().split('T')[0]
+                waste_date: getLimaDate()
             };
 
             try {
@@ -448,7 +458,7 @@ const saveDailyRegistry = async () => {
         alert('✅ Registro diario guardado exitosamente');
         
         // CREAR CIERRE DIARIO AUTOMÁTICAMENTE
-        const today = new Date().toISOString().split('T')[0];
+        const today = getLimaDate();
         const totalInjections = injectionsTable.value.reduce((sum, inj) => sum + inj.amount, 0);
         const newFinalBalance = (cashBox.value.totalIncome - cashBox.value.totalExpenses + totalInjections) + cashBox.value.initialBalance;
         
@@ -519,30 +529,50 @@ watch(() => wasteForm.value.product_id, () => {
         <div class="py-6 md:py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
                 
-                <!-- Indicadores de Caja -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-blue-500">
-                        <p class="text-xs text-gray-600 mb-1">Saldo Inicial</p>
-                        <p class="text-2xl font-bold text-blue-600">S/ {{ cashBox.initialBalance.toFixed(2) }}</p>
+                <!-- Indicadores de Caja Mejorados -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="card-stat-blue hover:shadow-md transition-smooth">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 font-medium mb-1">Saldo Inicial</p>
+                                <p class="text-2xl font-bold text-blue-600">S/ {{ cashBox.initialBalance.toFixed(2) }}</p>
+                            </div>
+                            <div class="text-4xl">💼</div>
+                        </div>
                     </div>
-                    <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-green-500">
-                        <p class="text-xs text-gray-600 mb-1">Total Ingresos</p>
-                        <p class="text-2xl font-bold text-green-600">S/ {{ cashBox.totalIncome.toFixed(2) }}</p>
+                    <div class="card-stat-green hover:shadow-md transition-smooth">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 font-medium mb-1">Total Ingresos</p>
+                                <p class="text-3xl font-bold text-green-600">S/ {{ cashBox.totalIncome.toFixed(2) }}</p>
+                            </div>
+                            <div class="text-4xl">💰</div>
+                        </div>
                     </div>
-                    <div class="bg-white p-4 rounded-lg shadow-sm border-l-4 border-red-500">
-                        <p class="text-xs text-gray-600 mb-1">Total Egresos</p>
-                        <p class="text-2xl font-bold text-red-600">S/ {{ cashBox.totalExpenses.toFixed(2) }}</p>
+                    <div class="card-stat-red hover:shadow-md transition-smooth">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600 font-medium mb-1">Total Egresos</p>
+                                <p class="text-3xl font-bold text-red-600">S/ {{ cashBox.totalExpenses.toFixed(2) }}</p>
+                            </div>
+                            <div class="text-4xl">📊</div>
+                        </div>
                     </div>
-                    <div class="bg-gradient-to-r from-green-500 to-blue-500 p-4 rounded-lg shadow-md">
-                        <p class="text-xs text-white mb-1">Saldo Final de Caja</p>
-                        <p class="text-2xl font-bold text-white">S/ {{ cashBox.finalBalance.toFixed(2) }}</p>
+                    <div class="bg-gradient-to-br from-green-500 to-emerald-600 p-6 rounded-lg shadow-lg hover:shadow-xl transition-smooth">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-white/90 font-medium mb-1">Saldo Final</p>
+                                <p class="text-3xl font-bold text-white">S/ {{ cashBox.finalBalance.toFixed(2) }}</p>
+                            </div>
+                            <div class="text-5xl">💸</div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Selector de Enfermera Responsable -->
-                <div class="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg shadow-sm p-6 border-l-4 border-purple-500">
-                    <h3 class="text-lg font-bold text-purple-700 mb-4 flex items-center">
-                        <span class="text-2xl mr-2">👩‍⚕️</span> Responsable del Turno/Hoja
+                <div class="card-base bg-gradient-to-r from-purple-50 to-indigo-50 border-l-4 border-purple-500">
+                    <h3 class="section-header text-purple-800">
+                        <span class="icon">👩‍⚕️</span> Responsable del Turno
                     </h3>
                     <div class="max-w-md">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -569,59 +599,57 @@ watch(() => wasteForm.value.product_id, () => {
                 </div>
 
                 <!-- Sección de Ventas (Ingresos) -->
-                <div class="bg-white rounded-lg shadow-sm p-6">
-                    <h3 class="text-lg font-bold text-green-700 mb-4 flex items-center">
-                        <span class="text-2xl mr-2">💰</span> Ingresos (Ventas del Día)
+                <div class="card-base border-l-4 border-green-500">
+                    <h3 class="section-header text-green-800">
+                        <span class="icon">💰</span> Ingresos (Ventas del Día)
                     </h3>
 
                     <!-- Formulario de Carga Rápida -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4 p-4 bg-gray-50 rounded-lg">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 p-5 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
                         <div class="md:col-span-2">
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Producto</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Producto</label>
                             <select
                                 v-model="saleForm.product_id"
-                                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+                                class="input-base h-11"
                             >
-                                <option value="">Seleccionar...</option>
+                                <option value="">Seleccionar producto...</option>
                                 <option v-for="product in availableProducts" :key="product.id" :value="product.id">
-                                    {{ product.name }} - S/ {{ product.base_price }}
+                                    {{ product.name }} - S/ {{ product.base_price }} (Stock: {{ product.stock }})
                                 </option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Cantidad</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Cantidad</label>
                             <input
                                 v-model.number="saleForm.quantity"
                                 @input="validateSaleQuantity"
                                 type="number"
                                 min="1"
                                 :max="selectedProduct ? selectedProduct.stock : 999"
-                                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500"
+                                class="input-base h-11"
+                                placeholder="1"
                             />
-                            <p v-if="selectedProduct" class="text-xs text-gray-500 mt-1">
-                                Máximo: {{ selectedProduct.stock }} unidades
-                            </p>
                         </div>
-                        <div class="flex flex-col justify-end">
+                        <div class="flex items-end">
                             <button
                                 @click="addSaleRow"
-                                class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 font-medium"
+                                class="btn-primary w-full h-11 text-base font-semibold shadow-sm"
                             >
-                                + Agregar (S/ {{ saleSubtotal.toFixed(2) }})
+                                ➕ S/ {{ saleSubtotal.toFixed(2) }}
                             </button>
                         </div>
                     </div>
 
                     <!-- Tabla de Ventas -->
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                        <table class="table-modern">
+                            <thead>
                                 <tr>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Producto</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Cantidad</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">P. Unitario</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Subtotal</th>
-                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500">Acción</th>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>P. Unitario</th>
+                                    <th>Subtotal</th>
+                                    <th class="text-right">Acción</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -647,51 +675,51 @@ watch(() => wasteForm.value.product_id, () => {
                 </div>
 
                 <!-- Sección de Gastos (Egresos) -->
-                <div class="bg-white rounded-lg shadow-sm p-6">
-                    <h3 class="text-lg font-bold text-red-700 mb-4 flex items-center">
-                        <span class="text-2xl mr-2">📊</span> Egresos (Gastos del Día)
+                <div class="card-base border-l-4 border-red-500">
+                    <h3 class="section-header text-red-800">
+                        <span class="icon">📉</span> Egresos (Gastos Operativos)
                     </h3>
 
-                    <!-- Formulario de Carga Rápida -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 p-4 bg-gray-50 rounded-lg">
+                    <!-- Formulario de Gasto -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-5 bg-gradient-to-r from-red-50 to-rose-50 rounded-xl border border-red-200">
                         <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Monto</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Monto (S/)</label>
                             <input
                                 v-model.number="expenseForm.amount"
                                 type="number"
                                 step="0.01"
                                 min="0"
-                                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500"
+                                class="input-base h-11"
                                 placeholder="0.00"
                             />
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Descripción</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Descripción</label>
                             <input
                                 v-model="expenseForm.description"
                                 type="text"
-                                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-red-500"
+                                class="input-base h-11"
                                 placeholder="Ej: Compra de harina"
                             />
                         </div>
-                        <div class="flex flex-col justify-end">
-                            <button
-                                @click="addExpenseRow"
-                                class="w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 font-medium"
+                        <div class="flex items-end">
+                            <button 
+                                @click="addExpenseRow" 
+                                class="btn-danger w-full h-11 text-base font-semibold shadow-sm"
                             >
-                                + Agregar Gasto
+                                ➕ Agregar
                             </button>
                         </div>
                     </div>
 
                     <!-- Tabla de Gastos -->
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                        <table class="table-modern">
+                            <thead>
                                 <tr>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Descripción</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Monto</th>
-                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500">Acción</th>
+                                    <th>Descripción</th>
+                                    <th>Monto</th>
+                                    <th class="text-right">Acción</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -715,67 +743,68 @@ watch(() => wasteForm.value.product_id, () => {
                 </div>
 
                 <!-- Sección de Mermas (Bajas de Stock) -->
-                <div class="bg-orange-50 rounded-lg shadow-sm p-6 border-l-4 border-orange-500">
-                    <h3 class="text-lg font-bold text-orange-700 mb-4 flex items-center">
-                        <span class="text-2xl mr-2">📩</span> Mermas / Bajas de Inventario
+                <div class="card-base border-l-4 border-orange-500">
+                    <h3 class="section-header text-orange-800">
+                        <span class="icon">📩</span> Mermas / Bajas de Inventario
                     </h3>
-                    <p class="text-xs text-gray-600 mb-4">
+                    <p class="text-sm text-gray-600 mb-6 bg-orange-50 p-3 rounded-lg border border-orange-100">
                         📌 Registra consumo de residentes, productos dañados o perdidos. Descuenta stock pero NO afecta el dinero de caja.
                     </p>
 
                     <!-- Formulario de Merma -->
-                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 p-5 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl border border-orange-200">
                         <div>
-                            <label class="block text-sm font-medium mb-2">Producto</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Producto</label>
                             <select
                                 v-model="wasteForm.product_id"
-                                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500"
+                                class="input-base h-11"
                             >
-                                <option value="">Seleccionar</option>
+                                <option value="">Seleccionar...</option>
                                 <option v-for="product in products" :key="product.id" :value="product.id">
                                     {{ product.name }} (Stock: {{ product.stock }})
                                 </option>
                             </select>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium mb-2">Cantidad</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Cantidad</label>
                             <input
                                 v-model.number="wasteForm.quantity"
                                 @input="validateWasteQuantity"
                                 type="number"
                                 min="1"
                                 :max="products.find(p => p.id == wasteForm.product_id)?.stock || 999"
-                                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500"
+                                class="input-base h-11"
+                                placeholder="1"
                             />
                         </div>
                         <div>
-                            <label class="block text-sm font-medium mb-2">Motivo</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Motivo</label>
                             <input
                                 v-model="wasteForm.reason"
                                 type="text"
-                                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500"
+                                class="input-base h-11"
                                 placeholder="Ej: Consumo de residentes"
                             />
                         </div>
-                        <div class="flex flex-col justify-end">
+                        <div class="flex items-end">
                             <button
                                 @click="addWasteRow"
-                                class="w-full bg-orange-600 text-white py-2 rounded-lg hover:bg-orange-700 font-medium"
+                                class="w-full h-11 bg-orange-600 text-white rounded-lg hover:bg-orange-700 font-bold transition-smooth shadow-sm"
                             >
-                                + Agregar Merma
+                                ➕ Agregar
                             </button>
                         </div>
                     </div>
 
                     <!-- Tabla de Mermas -->
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                        <table class="table-modern">
+                            <thead>
                                 <tr>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Producto</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Cantidad</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Motivo</th>
-                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500">Acción</th>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Motivo</th>
+                                    <th class="text-right">Acción</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -800,55 +829,55 @@ watch(() => wasteForm.value.product_id, () => {
                 </div>
 
                 <!-- Sección de Inyección de Capital (Requiere Permiso) -->
-                <div v-if="$page.props.auth.permissions && $page.props.auth.permissions.includes('inject_capital')" class="bg-white rounded-lg shadow-sm p-6 border-2 border-yellow-300">
-                    <h3 class="text-lg font-bold text-yellow-700 mb-4 flex items-center">
-                        <span class="text-2xl mr-2">💵</span> Inyección de Capital (Ingresos Extraordinarios)
+                <div v-if="$page.props.auth.permissions && $page.props.auth.permissions.includes('inject_capital')" class="card-base border-l-4 border-yellow-500 bg-yellow-50/30">
+                    <h3 class="section-header text-yellow-800">
+                        <span class="icon">💵</span> Inyección de Capital
                     </h3>
 
-                    <div class="bg-yellow-50 p-3 rounded mb-4 text-sm text-yellow-800">
-                        <strong>⚠️ Solo Administrador:</strong> Usa esta función para registrar ingresos extraordinarios como donaciones o aportes externos.
+                    <div class="bg-yellow-50 p-4 rounded-lg mb-6 text-sm text-yellow-800 border border-yellow-200">
+                        <strong>⚠️ Solo Administrador:</strong> Usa esta función para registrar ingresos extraordinarios como donaciones o aportes externos que incrementan el saldo inicial.
                     </div>
 
                     <!-- Formulario de Inyección -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 p-4 bg-gray-50 rounded-lg">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 p-5 bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl border border-yellow-200">
                         <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Monto</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Monto (S/)</label>
                             <input
                                 v-model.number="injectionForm.amount"
                                 type="number"
                                 step="0.01"
                                 min="0"
-                                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500"
+                                class="input-base h-11"
                                 placeholder="0.00"
                             />
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-1">Motivo / Nota</label>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Motivo / Nota</label>
                             <input
                                 v-model="injectionForm.reason"
                                 type="text"
-                                class="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-yellow-500"
+                                class="input-base h-11"
                                 placeholder="Ej: Donación externa"
                             />
                         </div>
-                        <div class="flex flex-col justify-end">
+                        <div class="flex items-end">
                             <button
                                 @click="addInjectionRow"
-                                class="w-full bg-yellow-600 text-white py-2 rounded-lg hover:bg-yellow-700 font-medium"
+                                class="w-full h-11 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 font-bold transition-smooth shadow-sm"
                             >
-                                + Agregar Inyección
+                                ➕ Agregar
                             </button>
                         </div>
                     </div>
 
                     <!-- Tabla de Inyecciones -->
                     <div class="overflow-x-auto">
-                        <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-50">
+                        <table class="table-modern">
+                            <thead>
                                 <tr>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Motivo</th>
-                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500">Monto</th>
-                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500">Acción</th>
+                                    <th>Motivo</th>
+                                    <th>Monto</th>
+                                    <th class="text-right">Acción</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -872,12 +901,12 @@ watch(() => wasteForm.value.product_id, () => {
                 </div>
 
                 <!-- Botón Guardar Registro -->
-                <div class="flex justify-end">
+                <div class="flex justify-end pt-6">
                     <button
                         @click="saveDailyRegistry"
-                        class="bg-blue-600 text-white px-8 py-3 rounded-lg hover:bg-blue-700 font-bold text-lg shadow-lg"
+                        class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white px-10 py-4 rounded-xl hover:shadow-2xl font-bold text-xl transition-all hover:-translate-y-1 active:scale-95 shadow-lg flex items-center"
                     >
-                        💾 Guardar Registro del Día
+                        <span class="mr-2">💾</span> Guardar Registro del Día
                     </button>
                 </div>
             </div>

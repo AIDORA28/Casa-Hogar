@@ -1,3 +1,246 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ========================================
+   CASA HOGAR - Sistema de Diseño
+   ======================================== */
+
+@layer base {
+    :root {
+        /* Colores Principales */
+        --color-primary: #10B981;
+        /* Verde - Ventas/Dinero */
+        --color-primary-dark: #059669;
+        --color-primary-light: #D1FAE5;
+
+        --color-danger: #EF4444;
+        /* Rojo - Gastos/Alertas */
+        --color-danger-dark: #DC2626;
+        --color-danger-light: #FEE2E2;
+
+        --color-warning: #F59E0B;
+        /* Amarillo - Advertencias */
+        --color-warning-dark: #D97706;
+        --color-warning-light: #FEF3C7;
+
+        --color-info: #3B82F6;
+        /* Azul - Información */
+        --color-info-dark: #2563EB;
+        --color-info-light: #DBEAFE;
+
+        --color-success: #059669;
+        /* Verde oscuro - Éxito */
+
+        /* Colores Neutros */
+        --color-bg-card: #FFFFFF;
+        --color-bg-hover: #F3F4F6;
+        --color-bg-gray: #F9FAFB;
+        --color-border: #E5E7EB;
+        --color-border-light: #F3F4F6;
+
+        --color-text-primary: #111827;
+        --color-text-secondary: #6B7280;
+        --color-text-muted: #9CA3AF;
+
+        /* Sombras */
+        --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+
+        /* Transiciones */
+        --transition-base: 150ms ease-in-out;
+        --transition-fast: 100ms ease-in-out;
+    }
+}
+
+@layer components {
+
+    /* ========================================
+       Cards Mejorados
+       ======================================== */
+    .card-base {
+        @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
+        transition: all var(--transition-base);
+    }
+
+    .card-hover {
+        @apply card-base hover:shadow-md hover:-translate-y-0.5;
+    }
+
+    .card-stat {
+        @apply card-base p-6;
+        background: linear-gradient(to bottom right, var(--color-bg-card), var(--color-bg-gray));
+    }
+
+    .card-stat-green {
+        @apply card-stat border-green-100;
+        background: linear-gradient(to bottom right, #D1FAE5, #FFFFFF);
+    }
+
+    .card-stat-red {
+        @apply card-stat border-red-100;
+        background: linear-gradient(to bottom right, #FEE2E2, #FFFFFF);
+    }
+
+    .card-stat-blue {
+        @apply card-stat border-blue-100;
+        background: linear-gradient(to bottom right, #DBEAFE, #FFFFFF);
+    }
+
+    .card-stat-yellow {
+        @apply card-stat border-yellow-100;
+        background: linear-gradient(to bottom right, #FEF3C7, #FFFFFF);
+    }
+
+    /* ========================================
+       Botones Estandarizados
+       ======================================== */
+    .btn-base {
+        @apply px-4 py-2 rounded-lg font-medium transition-all;
+        transition: all var(--transition-base);
+    }
+
+    .btn-primary {
+        @apply btn-base bg-green-600 text-white hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
+    }
+
+    .btn-secondary {
+        @apply btn-base bg-gray-100 text-gray-700 hover:bg-gray-200 focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+    }
+
+    .btn-danger {
+        @apply btn-base bg-red-600 text-white hover:bg-red-700 focus:ring-2 focus:ring-red-500 focus:ring-offset-2;
+    }
+
+    .btn-outline {
+        @apply btn-base border-2 border-gray-300 text-gray-700 hover:border-gray-400 hover:bg-gray-50;
+    }
+
+    .btn-sm {
+        @apply px-3 py-1.5 text-sm;
+    }
+
+    .btn-lg {
+        @apply px-6 py-3 text-lg;
+    }
+
+    /* ========================================
+       Inputs Consistentes
+       ======================================== */
+    .input-base {
+        @apply w-full px-4 py-2 border border-gray-300 rounded-lg;
+        @apply focus:ring-2 focus:ring-green-500 focus:border-transparent;
+        @apply transition-all;
+        transition: all var(--transition-fast);
+    }
+
+    .input-error {
+        @apply input-base border-red-500 focus:ring-red-500;
+    }
+
+    /* ========================================
+       Badges/Tags
+       ======================================== */
+    .badge-base {
+        @apply inline-flex items-center px-3 py-1 rounded-full text-sm font-bold uppercase tracking-tight;
+    }
+
+    .badge-green {
+        @apply badge-base bg-green-100 text-green-800 border border-green-200;
+    }
+
+    .badge-red {
+        @apply badge-base bg-red-100 text-red-800 border border-red-200;
+    }
+
+    .badge-yellow {
+        @apply badge-base bg-yellow-100 text-yellow-800 border border-yellow-200;
+    }
+
+    .badge-blue {
+        @apply badge-base bg-blue-100 text-blue-800 border border-blue-200;
+    }
+
+    .badge-gray {
+        @apply badge-base bg-gray-100 text-gray-800 border border-gray-200;
+    }
+
+    /* ========================================
+       Tablas Modernas
+       ======================================== */
+    .table-modern {
+        @apply min-w-full divide-y divide-gray-200;
+    }
+
+    .table-modern thead {
+        @apply bg-gray-50;
+    }
+
+    .table-modern th {
+        @apply px-6 py-4 text-left text-sm font-black text-gray-500 uppercase tracking-widest;
+    }
+
+    .table-modern tbody {
+        @apply bg-white divide-y divide-gray-100;
+    }
+
+    .table-modern td {
+        @apply px-6 py-5 whitespace-nowrap text-base text-gray-900;
+    }
+
+    .table-modern tr:hover {
+        @apply bg-gray-50/80;
+    }
+
+    /* ========================================
+       Utilidades de Sección
+       ======================================== */
+    .section-header {
+        @apply text-xl font-black text-gray-900 mb-5 flex items-center tracking-tight;
+    }
+
+    .section-header .icon {
+        @apply text-3xl mr-3;
+    }
+
+    .section-divider {
+        @apply border-t border-gray-200 my-8;
+    }
+
+    label {
+        @apply block text-sm font-black text-gray-700 mb-2 uppercase tracking-wide;
+    }
+
+    /* ========================================
+       Loading States
+       ======================================== */
+    .skeleton {
+        @apply animate-pulse bg-gray-200 rounded;
+    }
+
+    .spinner {
+        @apply inline-block animate-spin rounded-full border-4 border-solid border-current border-r-transparent;
+    }
+
+    /* ========================================
+       Empty States
+       ======================================== */
+    .empty-state {
+        @apply text-center py-12 text-gray-500;
+    }
+
+    .empty-state-icon {
+        @apply text-6xl mb-4 opacity-50;
+    }
+}
+
+@layer utilities {
+    .text-gradient-green {
+        @apply bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent;
+    }
+
+    .transition-smooth {
+        transition: all var(--transition-base);
+    }
+}

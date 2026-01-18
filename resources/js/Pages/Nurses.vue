@@ -3,69 +3,94 @@
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                👥 Gestión de Personal (Enfermeras/Tutoras)
-            </h2>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="font-bold text-2xl text-gray-800 leading-tight flex items-center">
+                        <span class="mr-3">👩‍⚕️</span> Gestión de Personal
+                    </h2>
+                    <p class="text-sm text-gray-500 mt-1">Administra el equipo de enfermeras y tutoras</p>
+                </div>
+                <button
+                    @click="openCreateModal"
+                    class="bg-gradient-to-r from-purple-600 to-indigo-700 text-white px-6 py-3 rounded-xl hover:shadow-lg font-bold transition-all hover:-translate-y-1 active:scale-95 flex items-center"
+                >
+                    <span class="mr-2">➕</span> Nueva Enfermera/Tutora
+                </button>
+            </div>
         </template>
 
         <div class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-6">
                 
-                <!-- Botón Agregar -->
-                <div class="mb-6">
-                    <button
-                        @click="openCreateModal"
-                        class="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg font-semibold transition"
-                    >
-                        ➕ Agregar Enfermera/Tutora
-                    </button>
+                <!-- Info Card Fluida -->
+                <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border-l-4 border-purple-500 p-6 rounded-2xl shadow-sm border border-purple-100">
+                    <div class="flex items-center">
+                        <div class="bg-white p-3 rounded-xl shadow-sm mr-4 text-2xl">👩‍⚕️</div>
+                        <div>
+                            <p class="font-bold text-purple-900 text-lg">Control de Personal</p>
+                            <p class="text-sm text-purple-700">
+                                Las personas registradas aquí aparecerán como opciones en el Registro Diario para asignar la responsabilidad de cada venta.
+                            </p>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Tabla de Personal -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <h3 class="font-bold text-lg mb-4">Lista de Personal</h3>
-                        
-                        <div v-if="loading" class="text-center py-8 text-gray-500">
-                            Cargando...
+                <div class="card-base p-0 overflow-hidden">
+                    <div class="px-6 py-5 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 flex justify-between items-center">
+                        <div>
+                            <h3 class="section-header !mb-0">
+                                <span class="icon">📋</span> Personal Autorizado
+                            </h3>
+                            <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">
+                                Enfermeras y Tutoras registradas
+                            </p>
                         </div>
+                    </div>
+                    
+                    <!-- Loading State -->
+                    <div v-if="loading" class="flex flex-col items-center justify-center py-12">
+                        <div class="spinner w-12 h-12 border-purple-500"></div>
+                        <p class="mt-4 text-gray-500">Cargando personal...</p>
+                    </div>
 
-                        <div v-else class="overflow-x-auto">
-                            <table class="min-w-full divide-y divide-gray-200">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado Active</th>
-                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado Registro</th>
-                                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    <tr v-for="nurse in nurses" :key="nurse.id">
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm font-medium text-gray-900">{{ nurse.name }}</div>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span 
-                                                :class="nurse.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'"
-                                                class="px-2 py-1 text-xs rounded-full font-semibold"
-                                            >
-                                                {{ nurse.is_active ? 'Activa' : 'Inactiva' }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span 
-                                                :class="nurse.deleted_at ? 'bg-gray-100 text-gray-800' : 'bg-blue-100 text-blue-800'"
-                                                class="px-2 py-1 text-xs rounded-full font-semibold"
-                                            >
-                                                {{ nurse.deleted_at ? 'Eliminada' : 'En Sistema' }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div v-else class="overflow-x-auto">
+                        <table class="table-modern">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Estado Active</th>
+                                    <th>Estado Registro</th>
+                                    <th class="text-right">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <tr v-for="nurse in nurses" :key="nurse.id">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm font-medium text-gray-900">{{ nurse.name }}</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span 
+                                            :class="nurse.is_active ? 'badge-green' : 'badge-red'"
+                                            class="inline-flex items-center"
+                                        >
+                                            {{ nurse.is_active ? 'Activa' : 'Inactiva' }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span 
+                                            :class="nurse.deleted_at ? 'badge-gray' : 'badge-blue'"
+                                            class="inline-flex items-center"
+                                        >
+                                            {{ nurse.deleted_at ? 'Eliminada' : 'En Sistema' }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                        <div class="flex justify-end gap-3">
                                             <button 
                                                 v-if="!nurse.deleted_at"
                                                 @click="openEditModal(nurse)"
-                                                class="text-blue-600 hover:text-blue-900 mr-4"
+                                                class="text-blue-600 hover:text-blue-900 font-semibold"
                                             >
                                                 ✏️ Editar
                                             </button>
@@ -73,24 +98,27 @@
                                                 v-if="!nurse.deleted_at"
                                                 @click="toggleActive(nurse)"
                                                 :class="nurse.is_active ? 'text-orange-600 hover:text-orange-900' : 'text-green-600 hover:text-green-900'"
+                                                class="font-semibold"
                                             >
                                                 {{ nurse.is_active ? '🚫 Desactivar' : '✅ Activar' }}
                                             </button>
                                             <button 
                                                 v-if="nurse.deleted_at"
                                                 @click="restoreNurse(nurse)"
-                                                class="text-green-600 hover:text-green-900"
+                                                class="text-green-600 hover:text-green-900 font-semibold"
                                             >
                                                 🔄 Restaurar
                                             </button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
 
-                            <div v-if="nurses.length === 0" class="text-center py-8 text-gray-500">
-                                No hay personal registrado
-                            </div>
+                        <div v-if="nurses.length === 0" class="empty-state">
+                            <div class="empty-state-icon text-4xl">👩‍⚕️</div>
+                            <p class="text-lg font-medium text-gray-700">No hay personal registrado</p>
+                            <p class="text-sm text-gray-500">Comienza agregando enfermeras o tutoras</p>
                         </div>
                     </div>
                 </div>
